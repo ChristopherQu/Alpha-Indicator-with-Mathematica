@@ -1,0 +1,86 @@
+(*First Step*)
+For[i = 1, i < 13, i++, 
+  a[i] = Import["C:\Users\quhui\Desktop\ROE.xlsx", "Data"][[1, 
+     i + 1]][[2]]];
+Off[Syntax::stresc]
+For[i = 1, i <= 12, i++, a[i] /= 12];
+TTMROE = {{AIRT, a[1]}, {ATSG, a[2]}, {AAWW, a[3]}, {CHRW, 
+    a[4]}, {DSX, a[5]}, {EXPD, a[6]}, {FDX, a[7]}, {FWRD, 
+    a[8]}, {HUBG, a[9]}, {RLGT, a[10]}, {RRTS, a[11]}, {UPS, a[12]}};
+(*Second Step*)
+For[i = 1, i < 13, i++, 
+  b[i] = Import["C:\Users\quhui\Desktop\ROE.xlsx", "Data"][[1, 
+     i + 1]][[3]]];
+For[i = 1, i <= 12, i++, b[i] /= 12];
+LASTROE = {{AIRT, b[1]}, {ATSG, b[2]}, {AAWW, b[3]}, {CHRW, 
+    b[4]}, {DSX, b[5]}, {EXPD, b[6]}, {FDX, b[7]}, {FWRD, 
+    b[8]}, {HUBG, b[9]}, {RLGT, b[10]}, {RRTS, b[11]}, {UPS, b[12]}};
+rLASTROE = Reverse[SortBy[LASTROE, Last]];
+For[j = 1, j <= 12, j++, TTMROE[[j, 2]] -= LASTROE[[j, 2]]]
+RANKofBEST = Reverse[SortBy[TTMROE, Last]] // MatrixForm
+
+(*Test if the top 20% stocks outperform the market*)
+R = 0;
+For[m = 1, m <= 12, m++, 
+  If[TTMROE[[m, 1]] != UPS && RRTS && AIRT && FWRD, Continue[]]; 
+  R = R + TTMROE[[m, 2]]];
+For[k = 1, k <= 12, k++,
+  mkt[k] = 
+   Import["C:\Users\quhui\Desktop\ROE.xlsx", "Data"][[1, k + 1]][[4]]];
+MKT = Array[mkt, 12];
+MEAN = Mean[MKT];
+RESULT = If[R >= MEAN, "Top 25% outperform the market", 
+   "Top 25% underperform the market"];
+Print[RESULT]
+
+(*Back-testing*)
+For[i = 1, i <= 465, i++, 
+  a[i] = Import["C:\Users\quhui\Desktop\S&P 500.xlsx", "Data"][[1, 
+    i + 1]]];
+BT = Array[a, 465];
+For[i = 1, i < 465, i++, BT[[i, 2]] /= 12];
+rBT16 = Reverse[SortBy[BT, #[[2]] &]];
+For[i = 1, i < 465, i++, BT[[i, 3]] /= 12];
+rBT17 = Reverse[SortBy[BT, #[[3]] &]];
+For[i = 1, i < 465, i++, BT[[i, 3]] -= BT[[i, 2]]];
+RESULT = Reverse[SortBy[BT, #[[3]] &]];
+Print[RESULT[[1 ;; Round[0.25*466], 1]]];
+For[i = 1, i <= Round[0.25*466], i++, NAME[i] = RESULT[[i, 1]]];
+
+(*Return of Portfolio*)
+For[i = 1, i <= Round[0.25*466], i++,
+  EARN[i] = Which[
+    NAME[i] == "AMD", 
+    FinancialData[StringJoin["NASDAQ:", NAME[i]], "EarningsPerShare"],
+    NAME[i] == "COP", 
+    FinancialData[StringJoin["NYSE:", NAME[i]], "EarningsPerShare"],
+    NAME[i] != "AMD" && NAME[i] != "COP", 
+    FinancialData[NAME[i], "EarningsPerShare"]]];
+PORT = Sum[EARN[i], {i, 1, Round[0.25*466]}]
+If[PORT > 109.88, Print["Outperformance"], Print["Underperformance"]]
+For[m = 1, m <= Round[0.25*466], m++, p[m] = DateListPlot[Which[
+    NAME[m] == "AMD", 
+    FinancialData[StringJoin["NASDAQ:", NAME[m]], 
+     "CumulativeFractionalChange", {2017, 5, 18}],
+    NAME[m] == "COP", 
+    FinancialData[StringJoin["NYSE:", NAME[m]], 
+     "CumulativeFractionalChange", {2017, 5, 18}],
+    NAME[m] != "AMD" && NAME[m] != "COP", 
+    FinancialData[NAME[m], 
+     "CumulativeFractionalChange", {2017, 5, 18}]]]]
+p[117] = DateListPlot[
+   FinancialData["SP500", 
+    "CumulativeFractionalChange", {2017, 5, 18}], PlotStyle -> Red];
+Show[p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], 
+ p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19], p[20],
+  p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29], 
+ p[30], p[31], p[32], p[33], p[34], p[35], p[36], p[37], p[38], p[39],
+  p[40], p[41], p[42], p[43], p[44], p[45], p[46], p[47], p[48], 
+ p[49], p[50], p[51], p[52], p[53], p[54], p[55], p[56], p[57], p[58],
+  p[59], p[60], p[61], p[62], p[63], p[64], p[65], p[66], p[67], 
+ p[68], p[69], p[70], p[71], p[72], p[73], p[74], p[75], p[76], p[77],
+  p[78], p[79], p[80], p[81], p[82], p[83], p[84], p[85], p[86], 
+ p[87], p[88], p[89], p[90], p[91], p[92], p[93], p[94], p[95], p[96],
+  p[97], p[98], p[99], p[100], p[101], p[102], p[103], p[104], p[105],
+  p[106], p[107], p[108], p[109], p[110], p[111], p[112], p[113], 
+ p[114], p[115], p[116], p[117], PlotRange -> All, ImageSize -> Full]
